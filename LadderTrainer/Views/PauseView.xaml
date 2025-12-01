@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<reactive:ReactiveContentView
+    x:Class="LadderTrainer.Views.PauseView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:reactive="clr-namespace:ReactiveUI.Maui;assembly=ReactiveUI.Maui"
+    xmlns:ladderTrainer="clr-namespace:LadderTrainer"
+    x:TypeArguments="ladderTrainer:LadderSessionViewModel">
+
+    <VerticalStackLayout Spacing="8">
+
+        <Label Text="Pause"
+               FontAttributes="Bold"
+               FontSize="18" />
+
+        <Label Text="Rest phase" />
+
+        <Label x:Name="RestTimeLabel"
+               FontSize="24" />
+
+        <Label Text="Overall time"
+               FontAttributes="Bold" />
+        <Label x:Name="OverallTimeLabel" />
+
+    </VerticalStackLayout>
+</reactive:ReactiveContentView>

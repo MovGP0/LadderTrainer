@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<reactive:ReactiveContentView
+    x:Class="LadderTrainer.Views.WorkoutView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:reactive="clr-namespace:ReactiveUI.Maui;assembly=ReactiveUI.Maui"
+    xmlns:ladderTrainer="clr-namespace:LadderTrainer"
+    x:TypeArguments="ladderTrainer:LadderSessionViewModel">
+
+    <VerticalStackLayout Spacing="8">
+
+        <Label Text="Workout"
+               FontAttributes="Bold"
+               FontSize="18" />
+
+        <HorizontalStackLayout Spacing="16">
+            <VerticalStackLayout>
+                <Label Text="Current set reps" FontAttributes="Bold" />
+                <Label x:Name="CurrentRepsLabel"
+                       FontSize="24" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout>
+                <Label Text="Completed" FontAttributes="Bold" />
+                <Label x:Name="CompletedRepsLabel" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout>
+                <Label Text="Remaining" FontAttributes="Bold" />
+                <Label x:Name="RemainingRepsLabel" />
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Spacing="16">
+            <VerticalStackLayout>
+                <Label Text="Phase" FontAttributes="Bold" />
+                <Label x:Name="PhaseLabel" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout>
+                <Label Text="Overall time" FontAttributes="Bold" />
+                <Label x:Name="OverallTimeLabel" />
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+
+        <Label x:Name="CurrentPhaseTimeLabel"
+               FontSize="18" />
+
+        <Button x:Name="SetDoneButton"
+                Text="Set done"
+                HeightRequest="44" />
+    </VerticalStackLayout>
+</reactive:ReactiveContentView>
