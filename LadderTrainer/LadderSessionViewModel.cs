@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using ReactiveUI;
@@ -29,6 +30,7 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
     [ObservableAsProperty] private bool _isSettingsEnabled = true;
 
     private readonly IObservable<bool> _canStart;
+    private readonly CompositeDisposable _derivedPropertySubscriptions = new();
 
     // Timing
     private readonly Stopwatch _overallStopwatch = new();
@@ -41,41 +43,43 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
         _canStart = this.WhenAnyValue(vm => vm.TargetRepetitions,
             reps => reps is >= 1 and <= 100);
 
-        // Activation: timers + derived properties
+        // Derived properties (OAPH) – not tied to activation lifecycle
+        _remainingRepetitionsHelper = this.WhenAnyValue(vm => vm.TargetRepetitions, vm => vm.CompletedRepetitions,
+                (target, completed) => Math.Max(0, target - completed))
+            .ToProperty(this, vm => vm.RemainingRepetitions, initialValue: _targetRepetitions, scheduler: RxApp.MainThreadScheduler);
+        _derivedPropertySubscriptions.Add(_remainingRepetitionsHelper);
+
+        var phaseChanges = this.WhenAnyValue(vm => vm.Phase)
+            .StartWith(Phase)
+            .Publish()
+            .RefCount();
+
+        _isWorkoutActiveHelper = phaseChanges
+            .Select(p => p == SessionPhase.Workout)
+            .ToProperty(this, vm => vm.IsWorkoutActive, initialValue: false, scheduler: RxApp.MainThreadScheduler);
+        _derivedPropertySubscriptions.Add(_isWorkoutActiveHelper);
+
+        _isRestActiveHelper = phaseChanges
+            .Select(p => p == SessionPhase.Rest)
+            .ToProperty(this, vm => vm.IsRestActive, initialValue: false, scheduler: RxApp.MainThreadScheduler);
+        _derivedPropertySubscriptions.Add(_isRestActiveHelper);
+
+        _isStatisticsVisibleHelper = phaseChanges
+            .Select(p => p == SessionPhase.Completed)
+            .ToProperty(this, vm => vm.IsStatisticsVisible, initialValue: false, scheduler: RxApp.MainThreadScheduler);
+        _derivedPropertySubscriptions.Add(_isStatisticsVisibleHelper);
+
+        _isSettingsEnabledHelper = phaseChanges
+            .Select(p => p is SessionPhase.Idle or SessionPhase.Completed)
+            .ToProperty(this, vm => vm.IsSettingsEnabled, initialValue: true, scheduler: RxApp.MainThreadScheduler);
+        _derivedPropertySubscriptions.Add(_isSettingsEnabledHelper);
+
+        // Activation: timers
         this.WhenActivated(disposables =>
         {
             // UI tick / rest logic
             Observable.Interval(TimeSpan.FromMilliseconds(100), RxApp.MainThreadScheduler)
                 .Subscribe(_ => Tick())
-                .DisposeWith(disposables);
-
-            // Remaining repetitions derived from Target + Completed
-            this.WhenAnyValue(vm => vm.TargetRepetitions, vm => vm.CompletedRepetitions,
-                    (target, completed) => Math.Max(0, target - completed))
-                .ToPropertyEx(this, vm => vm.RemainingRepetitions)
-                .DisposeWith(disposables);
-
-            // Phase-dependent boolean flags (workout / rest / statistics / settings)
-            var phaseChanges = this.WhenAnyValue(vm => vm.Phase).Publish().RefCount();
-
-            phaseChanges
-                .Select(p => p == SessionPhase.Workout)
-                .ToPropertyEx(this, vm => vm.IsWorkoutActive)
-                .DisposeWith(disposables);
-
-            phaseChanges
-                .Select(p => p == SessionPhase.Rest)
-                .ToPropertyEx(this, vm => vm.IsRestActive)
-                .DisposeWith(disposables);
-
-            phaseChanges
-                .Select(p => p == SessionPhase.Completed)
-                .ToProperty(this, vm => vm.IsStatisticsVisible)
-                .DisposeWith(disposables);
-
-            phaseChanges
-                .Select(p => p is SessionPhase.Idle or SessionPhase.Completed)
-                .ToProperty(this, vm => vm.IsSettingsEnabled)
                 .DisposeWith(disposables);
         });
     }
