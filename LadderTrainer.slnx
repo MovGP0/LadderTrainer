@@ -1,6 +1,7 @@
 ﻿<Solution>
     <Folder Name="/SolutionItems/">
         <File Path=".gitignore" />
+        <File Path="AGENTS.md" />
         <File Path="build.ps1" />
         <File Path="LICENSE" />
         <File Path="psakefile.ps1" />

@@ -52,7 +52,7 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
             // Remaining repetitions derived from Target + Completed
             this.WhenAnyValue(vm => vm.TargetRepetitions, vm => vm.CompletedRepetitions,
                     (target, completed) => Math.Max(0, target - completed))
-                .ToProperty(this, vm => vm.RemainingRepetitions)
+                .ToPropertyEx(this, vm => vm.RemainingRepetitions)
                 .DisposeWith(disposables);
 
             // Phase-dependent boolean flags (workout / rest / statistics / settings)
@@ -60,12 +60,12 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
 
             phaseChanges
                 .Select(p => p == SessionPhase.Workout)
-                .ToProperty(this, vm => vm.IsWorkoutActive)
+                .ToPropertyEx(this, vm => vm.IsWorkoutActive)
                 .DisposeWith(disposables);
 
             phaseChanges
                 .Select(p => p == SessionPhase.Rest)
-                .ToProperty(this, vm => vm.IsRestActive)
+                .ToPropertyEx(this, vm => vm.IsRestActive)
                 .DisposeWith(disposables);
 
             phaseChanges
