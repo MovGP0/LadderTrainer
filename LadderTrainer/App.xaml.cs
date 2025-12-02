@@ -13,8 +13,5 @@ public partial class App : Application
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
-    {
-        // Use Shell so navigation can be expanded later.
-        return new Window(new AppShell());
-    }
+        => new(new AppShell());
 }

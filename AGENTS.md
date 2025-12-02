@@ -35,3 +35,15 @@
 ## Source generation
 - Some code is source-generated (e.g., ReactiveUI `[Reactive]` properties). See https://github.com/reactiveui/ReactiveUI.SourceGenerators for the documentation.
 - When available, prefer tools (ie. Rider) for inspecting and editing files.
+
+## Implicit usings
+- Note that implicit usings are enabled. Do not import the following namespaces:
+  - `System`
+  - `System.Collections.Generic`
+  - `System.IO`
+  - `System.Linq`
+  - `System.Net.Http`
+  - `System.Threading`
+  - `System.Threading.Tasks`
+  - `Microsoft.Maui`
+  - `Microsoft.Maui.Controls`

@@ -1,4 +1,5 @@
 using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
 using ReactiveUI;
 using ReactiveUI.Maui;
 
@@ -12,21 +13,34 @@ public partial class PauseView : ReactiveContentView<LadderSessionViewModel>
 
         this.WhenActivated(disposables =>
         {
-            // Reuse CurrentPhaseTimeText (during rest it is "Rest remaining: mm:ss")
-            this.OneWayBind(ViewModel,
-                    vm => vm.CurrentPhaseTimeText,
-                    v  => v.RestTimeLabel.Text)
-                .DisposeWith(disposables);
+            this.WhenAnyValue(v => v.ViewModel)
+                .Where(vm => vm is not null)
+                .Take(1)
+                .Subscribe(vm =>
+                {
+                    // Reuse CurrentPhaseTimeText (during rest it is "Rest remaining: mm:ss")
+                    this.OneWayBind(vm!,
+                            x => x.CurrentPhaseTimeText,
+                            v  => v.RestTimeLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.OverallTimeText,
-                    v  => v.OverallTimeLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.OverallTimeText,
+                            v  => v.OverallTimeLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.IsRestActive,
-                    v  => v.IsVisible)
+                    this.OneWayBind(vm!,
+                            x => x.IsRestActive,
+                            v  => v.IsVisible)
+                        .DisposeWith(disposables);
+                })
                 .DisposeWith(disposables);
         });
+    }
+
+    protected override void OnBindingContextChanged()
+    {
+        base.OnBindingContextChanged();
+        ViewModel = BindingContext as LadderSessionViewModel;
     }
 }

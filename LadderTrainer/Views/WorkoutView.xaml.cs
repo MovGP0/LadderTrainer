@@ -1,4 +1,5 @@
 using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
 using ReactiveUI;
 using ReactiveUI.Maui;
 
@@ -12,46 +13,53 @@ public partial class WorkoutView : ReactiveContentView<LadderSessionViewModel>
 
         this.WhenActivated(disposables =>
         {
-            this.OneWayBind(ViewModel,
-                    vm => vm.CurrentSetRepetitions,
-                    v  => v.CurrentRepsLabel.Text)
-                .DisposeWith(disposables);
+            this.WhenAnyValue(v => v.ViewModel)
+                .Where(vm => vm is not null)
+                .Take(1)
+                .Subscribe(vm =>
+                {
+                    this.OneWayBind(vm!,
+                            x => x.CurrentSetRepetitions,
+                            v  => v.CurrentRepsLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.CompletedRepetitions,
-                    v  => v.CompletedRepsLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.CompletedRepetitions,
+                            v  => v.CompletedRepsLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.RemainingRepetitions,
-                    v  => v.RemainingRepsLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.RemainingRepetitions,
+                            v  => v.RemainingRepsLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.CurrentPhaseLabel,
-                    v  => v.PhaseLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.CurrentPhaseLabel,
+                            v  => v.PhaseLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.OverallTimeText,
-                    v  => v.OverallTimeLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.OverallTimeText,
+                            v  => v.OverallTimeLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.CurrentPhaseTimeText,
-                    v  => v.CurrentPhaseTimeLabel.Text)
-                .DisposeWith(disposables);
+                    this.OneWayBind(vm!,
+                            x => x.CurrentPhaseTimeText,
+                            v  => v.CurrentPhaseTimeLabel.Text)
+                        .DisposeWith(disposables);
 
-            this.BindCommand(ViewModel,
-                    vm => vm.SetDoneCommand,
-                    v  => v.SetDoneButton)
-                .DisposeWith(disposables);
-
-            // Show workout controls only during workout
-            this.OneWayBind(ViewModel,
-                    vm => vm.IsWorkoutActive,
-                    v  => v.IsVisible)
+                    this.BindCommand(vm!,
+                            x => x.SetDoneCommand,
+                            v  => v.SetDoneButton)
+                        .DisposeWith(disposables);
+                })
                 .DisposeWith(disposables);
         });
+    }
+
+    protected override void OnBindingContextChanged()
+    {
+        base.OnBindingContextChanged();
+        ViewModel = BindingContext as LadderSessionViewModel;
     }
 }

@@ -49,27 +49,25 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
             .ToProperty(this, vm => vm.RemainingRepetitions, initialValue: _targetRepetitions, scheduler: RxApp.MainThreadScheduler);
         _derivedPropertySubscriptions.Add(_remainingRepetitionsHelper);
 
-        var phaseChanges = this.WhenAnyValue(vm => vm.Phase)
-            .StartWith(Phase)
-            .Publish()
-            .RefCount();
+        var phaseStream = this.WhenAnyValue(vm => vm.Phase)
+            .StartWith(Phase);
 
-        _isWorkoutActiveHelper = phaseChanges
+        _isWorkoutActiveHelper = phaseStream
             .Select(p => p == SessionPhase.Workout)
             .ToProperty(this, vm => vm.IsWorkoutActive, initialValue: false, scheduler: RxApp.MainThreadScheduler);
         _derivedPropertySubscriptions.Add(_isWorkoutActiveHelper);
 
-        _isRestActiveHelper = phaseChanges
+        _isRestActiveHelper = phaseStream
             .Select(p => p == SessionPhase.Rest)
             .ToProperty(this, vm => vm.IsRestActive, initialValue: false, scheduler: RxApp.MainThreadScheduler);
         _derivedPropertySubscriptions.Add(_isRestActiveHelper);
 
-        _isStatisticsVisibleHelper = phaseChanges
+        _isStatisticsVisibleHelper = phaseStream
             .Select(p => p == SessionPhase.Completed)
             .ToProperty(this, vm => vm.IsStatisticsVisible, initialValue: false, scheduler: RxApp.MainThreadScheduler);
         _derivedPropertySubscriptions.Add(_isStatisticsVisibleHelper);
 
-        _isSettingsEnabledHelper = phaseChanges
+        _isSettingsEnabledHelper = phaseStream
             .Select(p => p is SessionPhase.Idle or SessionPhase.Completed)
             .ToProperty(this, vm => vm.IsSettingsEnabled, initialValue: true, scheduler: RxApp.MainThreadScheduler);
         _derivedPropertySubscriptions.Add(_isSettingsEnabledHelper);

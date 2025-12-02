@@ -24,10 +24,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
     </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
       <Folder Include="Platforms\Android\" />
       <Folder Include="Platforms\iOS\" />
       <Folder Include="Platforms\MacCatalyst\" />
       <Folder Include="Platforms\Windows\" />
-    </ItemGroup>
+      <Folder Include="ViewModels\" />
+  </ItemGroup>
 </Project>
