@@ -10,8 +10,8 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
 {
     public ViewModelActivator Activator { get; } = new();
 
-    private readonly int[] ladderPattern = [1, 2, 3, 4, 5, 4, 3, 2, 1];
-    private int currentPatternIndex;
+    private readonly int[] _ladderPattern = [1, 2, 3, 4, 5, 4, 3, 2, 1];
+    private int _currentPatternIndex;
 
     [Reactive] private int _targetRepetitions = 50;
     [Reactive] private int _completedRepetitions;
@@ -26,14 +26,14 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
     [ObservableAsProperty] private bool _isWorkoutActive;
     [ObservableAsProperty] private bool _isRestActive;
     [ObservableAsProperty] private bool _isStatisticsVisible;
-    [ObservableAsProperty] private bool _isSettingsEnabled;
+    [ObservableAsProperty] private bool _isSettingsEnabled = true;
 
     private readonly IObservable<bool> _canStart;
 
     // Timing
-    private readonly Stopwatch overallStopwatch = new();
-    private readonly Stopwatch phaseStopwatch = new();
-    private TimeSpan lastSetDuration = TimeSpan.Zero;
+    private readonly Stopwatch _overallStopwatch = new();
+    private readonly Stopwatch _phaseStopwatch = new();
+    private TimeSpan _lastSetDuration = TimeSpan.Zero;
 
     public LadderSessionViewModel()
     {
@@ -87,12 +87,12 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
     {
         // Reset session
         CompletedRepetitions = 0;
-        currentPatternIndex = 0;
+        _currentPatternIndex = 0;
         CurrentSetRepetitions = 0;
-        lastSetDuration = TimeSpan.Zero;
+        _lastSetDuration = TimeSpan.Zero;
 
-        overallStopwatch.Reset();
-        phaseStopwatch.Reset();
+        _overallStopwatch.Reset();
+        _phaseStopwatch.Reset();
 
         OverallTimeText = "00:00";
         CurrentPhaseTimeText = "00:00";
@@ -100,7 +100,7 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
 
         Phase = SessionPhase.Idle;
 
-        overallStopwatch.Start();
+        _overallStopwatch.Start();
         AdvanceToNextSet();
     }
 
@@ -112,15 +112,15 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
         if (Phase != SessionPhase.Workout)
             return;
 
-        phaseStopwatch.Stop();
-        lastSetDuration = phaseStopwatch.Elapsed;
+        _phaseStopwatch.Stop();
+        _lastSetDuration = _phaseStopwatch.Elapsed;
 
         CompletedRepetitions += CurrentSetRepetitions;
 
         if (CompletedRepetitions >= TargetRepetitions)
         {
             Phase = SessionPhase.Completed;
-            overallStopwatch.Stop();
+            _overallStopwatch.Stop();
             CurrentPhaseLabel = "Completed";
             UpdateTimes();
             return;
@@ -129,7 +129,7 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
         // Rest phase – rest duration equals length of the last set
         Phase = SessionPhase.Rest;
         CurrentPhaseLabel = "Rest";
-        phaseStopwatch.Restart();
+        _phaseStopwatch.Restart();
         UpdateTimes();
     }
 
@@ -138,23 +138,23 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
         if (CompletedRepetitions >= TargetRepetitions)
         {
             Phase = SessionPhase.Completed;
-            overallStopwatch.Stop();
-            phaseStopwatch.Reset();
+            _overallStopwatch.Stop();
+            _phaseStopwatch.Reset();
             CurrentPhaseLabel = "Completed";
             UpdateTimes();
             return;
         }
 
-        CurrentSetRepetitions = ladderPattern[currentPatternIndex];
+        CurrentSetRepetitions = _ladderPattern[_currentPatternIndex];
 
-        currentPatternIndex++;
-        if (currentPatternIndex >= ladderPattern.Length)
-            currentPatternIndex = 0;
+        _currentPatternIndex++;
+        if (_currentPatternIndex >= _ladderPattern.Length)
+            _currentPatternIndex = 0;
 
         Phase = SessionPhase.Workout;
         CurrentPhaseLabel = $"Workout: {CurrentSetRepetitions} reps";
 
-        phaseStopwatch.Restart();
+        _phaseStopwatch.Restart();
         UpdateTimes();
     }
 
@@ -166,8 +166,8 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
         UpdateTimes();
 
         if (Phase == SessionPhase.Rest &&
-            lastSetDuration > TimeSpan.Zero &&
-            phaseStopwatch.Elapsed >= lastSetDuration)
+            _lastSetDuration > TimeSpan.Zero &&
+            _phaseStopwatch.Elapsed >= _lastSetDuration)
         {
             // Rest finished, move to next ladder step
             AdvanceToNextSet();
@@ -176,16 +176,16 @@ public partial class LadderSessionViewModel : ReactiveObject, IActivatableViewMo
 
     private void UpdateTimes()
     {
-        OverallTimeText = FormatTime(overallStopwatch.Elapsed);
+        OverallTimeText = FormatTime(_overallStopwatch.Elapsed);
 
         switch (Phase)
         {
             case SessionPhase.Workout:
-                CurrentPhaseTimeText = $"Set time: {FormatTime(phaseStopwatch.Elapsed)}";
+                CurrentPhaseTimeText = $"Set time: {FormatTime(_phaseStopwatch.Elapsed)}";
                 break;
 
             case SessionPhase.Rest:
-                var remaining = lastSetDuration - phaseStopwatch.Elapsed;
+                var remaining = _lastSetDuration - _phaseStopwatch.Elapsed;
                 if (remaining < TimeSpan.Zero)
                     remaining = TimeSpan.Zero;
                 CurrentPhaseTimeText = $"Rest remaining: {FormatTime(remaining)}";
